@@ -77,7 +77,7 @@ class SALMONN(nn.Module):
             speech_qformer_layer,
         )
         self.speech_Qformer = self.speech_Qformer.to(devices[0])
-        self.specch_Qformer.bert = self.speech_Qformer.bert.to(devices[0])
+        self.speech_Qformer.bert = self.speech_Qformer.bert.to(devices[0])
         # self.speech_query_tokens = self.speech_query_tokens.to(devices[0])
         self.second_per_frame = second_per_frame
         self.second_stride = second_stride
