@@ -234,7 +234,9 @@ class SALMONN(nn.Module):
         embeds = torch.cat([bos_embeds, prompt_left_embeds, speech_embeds, prompt_right_embeds], dim=1)
         atts = torch.ones(embeds.size()[:-1], dtype=torch.long).to(embeds.device)
 
-        # generate
+        while True: 
+            continue
+        # generate 
         output = self.llama_model.generate(
             inputs_embeds=embeds,
             max_length=max_length,
