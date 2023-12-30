@@ -124,7 +124,7 @@ class SALMONN(nn.Module):
 
         # load ckpt
         ckpt_dict = torch.load(ckpt)['model']
-        self.load_state_dict(ckpt_dict, strict=False).to(devices[1])
+        self.load_state_dict(ckpt_dict, strict=False)
 
     def generate(
         self,
