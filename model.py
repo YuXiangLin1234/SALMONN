@@ -86,7 +86,7 @@ class SALMONN(nn.Module):
                 vicuna_path,
                 device_map="auto",
                 # load_in_8bit=True,
-                max_memory={int(devices[0].replace("cuda:", "")): "10GB", int(devices[1].replace("cuda:", "")): "24GB"},
+                max_memory={int(devices[0].replace("cuda:", "")): "6GB", int(devices[1].replace("cuda:", "")): "24GB"},
                 torch_dtype=torch.float16,
             )
         else:
@@ -95,7 +95,7 @@ class SALMONN(nn.Module):
                 torch_dtype=torch.float16,
                 load_in_8bit=True,
                 device_map="auto",
-                max_memory={int(devices[0].replace("cuda:", "")): "10GB", int(devices[0].replace("cuda:", "")): "24GB"},
+                max_memory={int(devices[0].replace("cuda:", "")): "6GB", int(devices[0].replace("cuda:", "")): "24GB"},
                 # device_map={'': 0}
             )
 
