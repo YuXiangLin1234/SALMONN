@@ -49,7 +49,7 @@ class SALMONN(nn.Module):
 
         super().__init__()
         
-        devices = ["cuda:" + device for device in devices]
+        devices = ["cuda:" + str(device) for device in devices]
         self.devices = devices
         # feature_extractor
         self.feature_extractor = WhisperFeatureExtractor.from_pretrained(whisper_path)
