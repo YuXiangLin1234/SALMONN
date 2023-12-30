@@ -92,7 +92,7 @@ class SALMONN(nn.Module):
                 torch_dtype=torch.float16,
             )
         else:
-            max_memory = {f"cuda:{i}": "0GB" for i in range(8)}
+            max_memory = {i: "0GB" for i in range(8)}
             max_memory[int(devices[1].replace("cuda:", ""))] = "23GB"
             self.llama_model = LlamaForCausalLM.from_pretrained(
                 vicuna_path,
