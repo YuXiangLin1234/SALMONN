@@ -44,7 +44,7 @@ class SALMONN(nn.Module):
         second_per_frame=0.333333,
         second_stride=0.333333,
         low_resource=False,
-        devices = [0, 1]
+        devices = [0, 1, 2]
     ):
 
         super().__init__()
@@ -85,8 +85,8 @@ class SALMONN(nn.Module):
             self.llama_model = LlamaForCausalLM.from_pretrained(
                 vicuna_path,
                 device_map="auto",
-                load_in_8bit=True,
-                max_memory={int(devices[0].replace("cuda:", "")): "10GB", int(devices[0].replace("cuda:", "")): "24GB"},
+                # load_in_8bit=True,
+                max_memory={int(devices[0].replace("cuda:", "")): "10GB", int(devices[1].replace("cuda:", "")): "24GB"},
                 torch_dtype=torch.float16,
             )
         else:
