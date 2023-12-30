@@ -43,7 +43,7 @@ class SALMONN(nn.Module):
         lora_dropout=0.1,
         second_per_frame=0.333333,
         second_stride=0.333333,
-        low_resource=False
+        low_resource=False,
         devices = [0, 1]
     ):
 
