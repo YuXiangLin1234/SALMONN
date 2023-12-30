@@ -85,6 +85,7 @@ class SALMONN(nn.Module):
             self.llama_model = LlamaForCausalLM.from_pretrained(
                 vicuna_path,
                 device_map="auto",
+                load_in_8bit=True,
                 max_memory={int(devices[0].replace("cuda:", "")): "10GB", int(devices[0].replace("cuda:", "")): "24GB"},
                 torch_dtype=torch.float16,
             )
