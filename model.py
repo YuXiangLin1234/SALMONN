@@ -76,8 +76,8 @@ class SALMONN(nn.Module):
             self.speech_encoder.config.d_model + self.beats.cfg.encoder_embed_dim,
             speech_qformer_layer,
         )
-        self.speech_Qformer.to(devices[0])
-        self.speech_query_tokens.to(devices[0])
+        self.speech_Qformer = self.speech_Qformer.to(devices[0])
+        self.speech_query_tokens = self.speech_query_tokens.to(devices[0])
         self.second_per_frame = second_per_frame
         self.second_stride = second_stride
         
