@@ -121,7 +121,7 @@ class SALMONN(nn.Module):
 
         # proj
         self.speech_llama_proj = nn.Linear(
-            self.speech_Qformer.config.hidden_size, self.llama_model.config.hidden_size).to(devices[1])
+            self.speech_Qformer.config.hidden_size, self.llama_model.config.hidden_size).to(devices[0])
 
         # load ckpt
         ckpt_dict = torch.load(ckpt)['model']
@@ -180,6 +180,7 @@ class SALMONN(nn.Module):
         speech_embeds_overlap = speech_embeds_overlap.view(B, -1, kernel[1], L)
         speech_embeds_overlap = torch.permute(speech_embeds_overlap, [0, 3, 2, 1])
         speech_embeds = speech_embeds_overlap.reshape(-1, kernel[1], C)
+        speech_embeds = speech_embeds.to(self.devices[0])
         speech_atts = torch.ones(speech_embeds.size()[:-1], dtype=torch.long, device=speech_embeds.device)
 
         # Qformer
