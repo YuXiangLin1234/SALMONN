@@ -187,8 +187,8 @@ class SALMONN(nn.Module):
         # Qformer
         query_tokens = self.speech_query_tokens.expand(speech_embeds.shape[0], -1, -1)
         query_tokens = query_tokens.to(self.speech_Qformer.device)
-        print(self.speech_Qformer.device)
-        print(self.speech_Qformer.bert.device)
+        # print(self.speech_Qformer.device)
+        # print(self.speech_Qformer.bert.device)
         query_output = self.speech_Qformer.bert(
             query_embeds=query_tokens,
             encoder_hidden_states=speech_embeds,
