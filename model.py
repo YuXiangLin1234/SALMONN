@@ -225,6 +225,8 @@ class SALMONN(nn.Module):
             ) * self.llama_tokenizer.bos_token_id
         )
 
+        speech_embeds = speech_embeds.to(self.llama_model.device)
+        prompt_right_embeds = prompt_right_embeds.to(self.llama_model.device)
         embeds = torch.cat([bos_embeds, prompt_left_embeds, speech_embeds, prompt_right_embeds], dim=1)
         atts = torch.ones(embeds.size()[:-1], dtype=torch.long).to(embeds.device)
 
