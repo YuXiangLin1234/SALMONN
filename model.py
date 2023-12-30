@@ -97,7 +97,7 @@ class SALMONN(nn.Module):
                 torch_dtype=torch.float16,
                 load_in_8bit=True,
                 device_map="auto",
-                max_memory={int(devices[0].replace("cuda:", "")): "24GB"},
+                max_memory={int(devices[1].replace("cuda:", "")): "24GB"},
                 # device_map={'': 0}
             )
 
