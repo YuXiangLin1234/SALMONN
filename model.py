@@ -80,6 +80,7 @@ class SALMONN(nn.Module):
         if not low_resource:
             self.llama_model = LlamaForCausalLM.from_pretrained(
                 vicuna_path,
+                device_map="auto",
                 torch_dtype=torch.float16,
             )
         else:
@@ -87,7 +88,8 @@ class SALMONN(nn.Module):
                 vicuna_path,
                 torch_dtype=torch.float16,
                 load_in_8bit=True,
-                device_map={'': 0}
+                device_map="auto",
+                # device_map={'': 0}
             )
 
         # lora
