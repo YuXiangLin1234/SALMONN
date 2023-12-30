@@ -92,12 +92,14 @@ class SALMONN(nn.Module):
                 torch_dtype=torch.float16,
             )
         else:
+            max_memory = {f"cuda:{i}": "0GB" for i in range(8)}
+            max_memory[int(devices[1].replace("cuda:", ""))] = "23GB"
             self.llama_model = LlamaForCausalLM.from_pretrained(
                 vicuna_path,
                 torch_dtype=torch.float16,
                 load_in_8bit=True,
                 device_map="auto",
-                max_memory={int(devices[1].replace("cuda:", "")): "24GB"},
+                max_memory=max_memory,
                 # device_map={'': 0}
             )
 
@@ -234,8 +236,8 @@ class SALMONN(nn.Module):
         embeds = torch.cat([bos_embeds, prompt_left_embeds, speech_embeds, prompt_right_embeds], dim=1)
         atts = torch.ones(embeds.size()[:-1], dtype=torch.long).to(embeds.device)
 
-        while True: 
-            continue
+        # while True: 
+        #     continue
         # generate 
         output = self.llama_model.generate(
             inputs_embeds=embeds,
