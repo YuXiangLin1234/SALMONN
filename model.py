@@ -44,16 +44,19 @@ class SALMONN(nn.Module):
         second_per_frame=0.333333,
         second_stride=0.333333,
         low_resource=False
+        devices = [0, 1]
     ):
 
         super().__init__()
-
+        
+        devices = ["cuda:" + device for device in devices]
+        self.devices = devices
         # feature_extractor
         self.feature_extractor = WhisperFeatureExtractor.from_pretrained(whisper_path)
 
         # whisper
-        self.speech_encoder = WhisperModel.from_pretrained(whisper_path).encoder
-        self.ln_speech = nn.LayerNorm(self.speech_encoder.config.d_model)
+        self.speech_encoder = WhisperModel.from_pretrained(whisper_path).encoder.to(devices[0])
+        self.ln_speech = nn.LayerNorm(self.speech_encoder.config.d_model).to(devices[0])
 
         # beats
         self.beats_ckpt = beats_path
@@ -61,8 +64,8 @@ class SALMONN(nn.Module):
         beats_cfg = BEATsConfig(beats_checkpoint['cfg'])
         beats = BEATs(beats_cfg)
         beats.load_state_dict(beats_checkpoint['model'])
-        self.beats = beats
-        self.ln_audio = nn.LayerNorm(self.beats.cfg.encoder_embed_dim)
+        self.beats = beats.to(devices[0])
+        self.ln_audio = nn.LayerNorm(self.beats.cfg.encoder_embed_dim).to(devices[0])
         for name, param in self.beats.named_parameters():
             param.requires_grad = False
         self.beats.eval()
@@ -73,6 +76,7 @@ class SALMONN(nn.Module):
             self.speech_encoder.config.d_model + self.beats.cfg.encoder_embed_dim,
             speech_qformer_layer,
         )
+        self.speech_Qformer.to(devices[0])
         self.second_per_frame = second_per_frame
         self.second_stride = second_stride
         
@@ -81,6 +85,7 @@ class SALMONN(nn.Module):
             self.llama_model = LlamaForCausalLM.from_pretrained(
                 vicuna_path,
                 device_map="auto",
+                max_memory={int(devices[0].replace("cuda:", "")): "10GB", int(devices[0].replace("cuda:", "")): "24GB"},
                 torch_dtype=torch.float16,
             )
         else:
@@ -89,6 +94,7 @@ class SALMONN(nn.Module):
                 torch_dtype=torch.float16,
                 load_in_8bit=True,
                 device_map="auto",
+                max_memory={int(devices[0].replace("cuda:", "")): "10GB", int(devices[0].replace("cuda:", "")): "24GB"},
                 # device_map={'': 0}
             )
 
@@ -113,18 +119,20 @@ class SALMONN(nn.Module):
 
         # proj
         self.speech_llama_proj = nn.Linear(
-            self.speech_Qformer.config.hidden_size, self.llama_model.config.hidden_size)
+            self.speech_Qformer.config.hidden_size, self.llama_model.config.hidden_size).to(devices[1])
 
         # load ckpt
         ckpt_dict = torch.load(ckpt)['model']
-        self.load_state_dict(ckpt_dict, strict=False)
+        self.load_state_dict(ckpt_dict, strict=False).to(devices[1])
 
     def generate(
         self,
         wav_path,
         prompt,
         prompt_pattern="USER: <Speech><SpeechHere></Speech> {}\nASSISTANT:",
-        device='cuda:0',
+        
+        device='cuda',
+        devices=None,
         max_length=200,
         num_beams=4,
         do_sample=True,
@@ -144,12 +152,12 @@ class SALMONN(nn.Module):
             wav = librosa.resample(wav, orig_sr=sr, target_sr=16000, res_type="fft")
         
         # whisper
-        spectrogram = self.feature_extractor(wav, return_tensors="pt", sampling_rate=16000).input_features.to(device) # [1, 80, 3000]
+        spectrogram = self.feature_extractor(wav, return_tensors="pt", sampling_rate=16000).input_features.to(self.devices[0]) # [1, 80, 3000]
         speech_embeds = self.speech_encoder(spectrogram, return_dict=True).last_hidden_state
        
         # beats
-        raw_wav = torch.from_numpy(wav).to(device).unsqueeze(0)
-        audio_padding_mask = torch.zeros(raw_wav.shape, device=device).bool()
+        raw_wav = torch.from_numpy(wav).to(self.devices[0]).unsqueeze(0)
+        audio_padding_mask = torch.zeros(raw_wav.shape, device=self.devices[0]).bool()
         audio_embeds, _ = self.beats.extract_features(raw_wav, padding_mask=audio_padding_mask, feature_only=True)
 
         # auditory embeds
@@ -204,13 +212,13 @@ class SALMONN(nn.Module):
             torch.ones(
                 [1, 1],
                 dtype=torch.long,
-                device=device,
+                device=self.llama_model.device,
             ) * self.llama_tokenizer.bos_token_id
         ) if not self.lora else self.llama_model.model.model.embed_tokens(
             torch.ones(
                 [1, 1],
                 dtype=torch.long,
-                device=device,
+                device=self.llama_model.device,
             ) * self.llama_tokenizer.bos_token_id
         )
 
